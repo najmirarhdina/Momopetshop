@@ -4,12 +4,7 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 
 @Entity
-@Table(
-    name = "stok_masuk",
-    uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"id_produk", "id_supplier"})
-    }
-)
+@Table(name = "stok_masuk")
 public class StokMasuk {
 
     @Id
@@ -29,45 +24,18 @@ public class StokMasuk {
     @Column(nullable = false)
     private LocalDate tanggal;
 
-    // ================= GETTER & SETTER =================
+    public Integer getIdStok() { return idStok; }
+    public void setIdStok(Integer idStok) { this.idStok = idStok; }
 
-    public Integer getIdStok() {
-        return idStok;
-    }
+    public Integer getIdProduk() { return idProduk; }
+    public void setIdProduk(Integer idProduk) { this.idProduk = idProduk; }
 
-    public void setIdStok(Integer idStok) {
-        this.idStok = idStok;
-    }
+    public Integer getIdSupplier() { return idSupplier; }
+    public void setIdSupplier(Integer idSupplier) { this.idSupplier = idSupplier; }
 
-    public Integer getIdProduk() {
-        return idProduk;
-    }
+    public Integer getJumlah() { return jumlah; }
+    public void setJumlah(Integer jumlah) { this.jumlah = jumlah; }
 
-    public void setIdProduk(Integer idProduk) {
-        this.idProduk = idProduk;
-    }
-
-    public Integer getIdSupplier() {
-        return idSupplier;
-    }
-
-    public void setIdSupplier(Integer idSupplier) {
-        this.idSupplier = idSupplier;
-    }
-
-    public Integer getJumlah() {
-        return jumlah;
-    }
-
-    public void setJumlah(Integer jumlah) {
-        this.jumlah = jumlah;
-    }
-
-    public LocalDate getTanggal() {
-        return tanggal;
-    }
-
-    public void setTanggal(LocalDate tanggal) {
-        this.tanggal = tanggal;
-    }
+    public LocalDate getTanggal() { return tanggal; }
+    public void setTanggal(LocalDate tanggal) { this.tanggal = tanggal; }
 }

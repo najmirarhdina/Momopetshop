@@ -7,13 +7,16 @@ import com.management.momopetshop.dto.ProdukRequest;
 import com.management.momopetshop.model.Kategori;
 import com.management.momopetshop.model.Produk;
 import com.management.momopetshop.model.Supplier;
+import com.management.momopetshop.repository.DetailTransaksiRepository;
 import com.management.momopetshop.repository.KategoriRepository;
 import com.management.momopetshop.repository.ProdukRepository;
+import com.management.momopetshop.repository.StokMasukRepository;
 import com.management.momopetshop.repository.SupplierRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -23,15 +26,21 @@ public class ProdukService {
     private final ProdukRepository produkRepository;
     private final KategoriRepository kategoriRepository;
     private final SupplierRepository supplierRepository;
+    private final StokMasukRepository stokMasukRepository;
+    private final DetailTransaksiRepository detailTransaksiRepository;
 
     public ProdukService(
             ProdukRepository produkRepository,
             KategoriRepository kategoriRepository,
-            SupplierRepository supplierRepository
+            SupplierRepository supplierRepository,
+            StokMasukRepository stokMasukRepository,
+            DetailTransaksiRepository detailTransaksiRepository
     ) {
         this.produkRepository = produkRepository;
         this.kategoriRepository = kategoriRepository;
         this.supplierRepository = supplierRepository;
+        this.stokMasukRepository = stokMasukRepository;
+        this.detailTransaksiRepository = detailTransaksiRepository;
     }
 
     // ================= GET ALL =================
@@ -81,8 +90,6 @@ public class ProdukService {
         produk.setHarga(req.getHarga());
         produk.setKategori(kategori);
         produk.setSupplier(supplier);
-
-        // stok diatur sistem
         produk.setStok(0);
 
         return produkRepository.save(produk);
@@ -125,11 +132,20 @@ public class ProdukService {
     }
 
     // ================= DELETE =================
+    @Transactional
     public void delete(Integer id) {
         if (!produkRepository.existsById(id)) {
             throw new DataNotFoundException(
                     "Produk dengan ID " + id + " tidak ditemukan");
         }
+
+        // 1. Hapus detail_transaksi dulu (FK ke id_produk)
+        detailTransaksiRepository.deleteByIdProduk(id);
+
+        // 2. Hapus stok_masuk (FK ke id_produk)
+        stokMasukRepository.deleteByIdProduk(id);
+
+        // 3. Baru hapus produk
         produkRepository.deleteById(id);
     }
 }

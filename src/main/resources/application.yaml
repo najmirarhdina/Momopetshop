@@ -1,12 +1,25 @@
+# spring:
+#   application:
+#     name: momopetshop
+
+#   profiles:
+#     active: local
+
+#   datasource:
+#     url: jdbc:mysql://localhost:3306/db_petshopkasir?useSSL=false&serverTimezone=Asia/Jakarta
+#     username: root
+#     password:
+#     driver-class-name: com.mysql.cj.jdbc.Driver
+
+#   jpa:
+#     hibernate:
+#       ddl-auto: update
+#     show-sql: true
+#     database-platform: org.hibernate.dialect.MySQLDialect
+#     open-in-view: false
 spring:
-  application:
-    name: momopetshop
-
-  profiles:
-    active: local
-
   datasource:
-    url: jdbc:mysql://localhost:3306/db_petshopkasir?useSSL=false&serverTimezone=Asia/Jakarta
+    url: jdbc:mysql://172.23.33.147:3306/db_petshopkasir?useSSL=false&serverTimezone=Asia/Jakarta
     username: root
     password:
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -17,13 +30,14 @@ spring:
     show-sql: true
     database-platform: org.hibernate.dialect.MySQLDialect
     open-in-view: false
-
 springdoc:
   api-docs:
     enabled: true
   swagger-ui:
     enabled: true
 
+server:
+  port: 8081
 
 
 

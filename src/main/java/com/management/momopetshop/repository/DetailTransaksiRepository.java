@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface DetailTransaksiRepository extends JpaRepository<DetailTransaksi, Integer> {
+    void deleteByIdProduk(Integer idProduk);
 }

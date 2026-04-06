@@ -11,6 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/transaksi")
+@CrossOrigin(origins = "*")
 public class TransaksiController {
 
     private final TransaksiService transaksiService;

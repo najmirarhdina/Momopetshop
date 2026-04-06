@@ -1,6 +1,5 @@
 package com.management.momopetshop.service;
 
-import com.management.momopetshop.DataAlreadyExistsException;
 import com.management.momopetshop.DataImmutableException;
 import com.management.momopetshop.DataNotFoundException;
 import com.management.momopetshop.model.Produk;
@@ -45,17 +44,7 @@ public class StokMasukService {
             throw new DataNotFoundException("ID Supplier tidak tersedia");
         }
 
-        boolean exists = repository.existsByIdProdukAndIdSupplier(
-                stokMasuk.getIdProduk(),
-                stokMasuk.getIdSupplier()
-        );
-
-        if (exists) {
-            throw new DataAlreadyExistsException(
-                    "Stok masuk dengan produk dan supplier tersebut sudah ada"
-            );
-        }
-
+        // ✅ Langsung save — setiap isi stok jadi record baru
         StokMasuk saved = repository.save(stokMasuk);
 
         produk.setStok(produk.getStok() + stokMasuk.getJumlah());
@@ -91,10 +80,8 @@ public class StokMasukService {
 
         if (!existing.getIdProduk().equals(request.getIdProduk()) ||
             !existing.getIdSupplier().equals(request.getIdSupplier())) {
-
             throw new DataImmutableException(
-                    "ID Produk dan ID Supplier tidak boleh diubah"
-            );
+                    "ID Produk dan ID Supplier tidak boleh diubah");
         }
 
         if (request.getJumlah() <= 0) {
@@ -106,10 +93,8 @@ public class StokMasukService {
                         new DataNotFoundException("Produk tidak ditemukan"));
 
         Integer tambahan = request.getJumlah();
-
         existing.setJumlah(existing.getJumlah() + tambahan);
         produk.setStok(produk.getStok() + tambahan);
-
         existing.setTanggal(request.getTanggal());
 
         produkRepository.save(produk);

@@ -10,6 +10,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/stok-masuk")
+@CrossOrigin(origins = "*")
 public class StokMasukController {
 
     private final StokMasukService service;

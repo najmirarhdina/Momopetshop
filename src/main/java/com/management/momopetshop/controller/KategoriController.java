@@ -10,6 +10,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/kategori")
+@CrossOrigin(origins = "*")
 public class KategoriController {
 
     private final KategoriService kategoriService;

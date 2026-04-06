@@ -38,6 +38,10 @@ public class TransaksiService {
     @Transactional
     public TransaksiResponse simpanTransaksi(TransaksiRequest request) {
 
+        if (request.getItems() == null || request.getItems().isEmpty()) {
+            throw new InvalidRequestException("Items tidak boleh kosong");
+        }
+
         Transaksi transaksi = new Transaksi();
         transaksi.setIdUser(request.getIdUser());
         transaksi.setTanggal(LocalDateTime.now());
@@ -48,18 +52,21 @@ public class TransaksiService {
 
         for (TransaksiItemDTO item : request.getItems()) {
 
-            Produk produk = produkRepository.findById(item.getIdProduk())
-                    .orElseThrow(() ->
-                            new RuntimeException("Produk tidak ditemukan")
-                    );
-
-            if (item.getHarga() != null &&
-                item.getHarga().compareTo(produk.getHarga()) != 0) {
-                throw new InvalidRequestException("Harga tidak valid");
+            if (item.getQty() == null || item.getQty() <= 0) {
+                throw new InvalidRequestException("Qty tidak valid");
             }
 
+            Produk produk = produkRepository.findById(item.getIdProduk())
+                    .orElseThrow(() ->
+                            new RuntimeException("Produk tidak ditemukan: " + item.getIdProduk())
+                    );
+
+            // ✅ Harga selalu dari DB, tidak dari request
             if (produk.getStok() < item.getQty()) {
-                throw new InvalidRequestException("Stok produk tidak mencukupi");
+                throw new InvalidRequestException(
+                    "Stok produk '" + produk.getNamaProduk() + "' tidak mencukupi" +
+                    " (tersisa: " + produk.getStok() + ")"
+                );
             }
 
             produk.setStok(produk.getStok() - item.getQty());
@@ -83,7 +90,13 @@ public class TransaksiService {
         transaksi.setDetailTransaksi(detailList);
 
         Transaksi saved = transaksiRepository.save(transaksi);
-        return mapToResponse(saved);
+
+        // ✅ Fetch ulang dengan JOIN FETCH agar detail ter-load
+        Transaksi withDetail = transaksiRepository
+                .findByIdWithDetail(saved.getIdTransaksi())
+                .orElse(saved);
+
+        return mapToResponse(withDetail);
     }
 
     // =============================
@@ -93,7 +106,9 @@ public class TransaksiService {
     public List<TransaksiResponse> getAll() {
 
         List<TransaksiResponse> responses = new ArrayList<>();
-        for (Transaksi t : transaksiRepository.findAll()) {
+
+        // ✅ Pakai findAllWithDetail() bukan findAll()
+        for (Transaksi t : transaksiRepository.findAllWithDetail()) {
             responses.add(mapToResponse(t));
         }
         return responses;
@@ -105,16 +120,17 @@ public class TransaksiService {
     @Transactional(readOnly = true)
     public TransaksiResponse getById(Integer id) {
 
-        Transaksi transaksi = transaksiRepository.findById(id)
+        // ✅ Pakai findByIdWithDetail() bukan findById()
+        Transaksi transaksi = transaksiRepository.findByIdWithDetail(id)
                 .orElseThrow(() ->
-                        new RuntimeException("Transaksi tidak ditemukan")
+                        new RuntimeException("Transaksi tidak ditemukan: " + id)
                 );
 
         return mapToResponse(transaksi);
     }
 
     // =================================================
-    // ✅ PAGINATION (PAGE + SIZE SAJA)
+    // PAGINATION
     // =================================================
     @Transactional(readOnly = true)
     public Page<TransaksiResponse> getPagination(int page, int size) {
@@ -122,7 +138,6 @@ public class TransaksiService {
         if (page < 0) {
             throw new InvalidRequestException("Page tidak boleh kurang dari 0");
         }
-
         if (size <= 0) {
             throw new InvalidRequestException("Size harus lebih dari 0");
         }
@@ -150,15 +165,18 @@ public class TransaksiService {
         res.setTotal(transaksi.getTotal());
 
         List<DetailTransaksiResponse> items = new ArrayList<>();
-        for (DetailTransaksi d : transaksi.getDetailTransaksi()) {
 
-            DetailTransaksiResponse dr = new DetailTransaksiResponse();
-            dr.setIdProduk(d.getIdProduk());
-            dr.setQty(d.getQty());
-            dr.setHarga(d.getHarga());
-            dr.setSubtotal(d.getSubtotal());
+        if (transaksi.getDetailTransaksi() != null) {
+            for (DetailTransaksi d : transaksi.getDetailTransaksi()) {
 
-            items.add(dr);
+                DetailTransaksiResponse dr = new DetailTransaksiResponse();
+                dr.setIdProduk(d.getIdProduk());
+                dr.setQty(d.getQty());
+                dr.setHarga(d.getHarga());
+                dr.setSubtotal(d.getSubtotal());
+
+                items.add(dr);
+            }
         }
 
         res.setItems(items);

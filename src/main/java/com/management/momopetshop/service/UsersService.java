@@ -65,6 +65,18 @@ public class UsersService {
         }
         return usersRepository.save(user);
     }
+    public Users updateUser(Users user) {
+
+    return usersRepository.save(user);
+
+}
+
+public void deleteUser(Integer id) {
+
+    usersRepository.deleteById(id);
+
+}
+
 
     // =================================================
     // ✅ PAGINATION (PAGE + SIZE SAJA)
